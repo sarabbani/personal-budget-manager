@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Budget Manager</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <main class="container" id="app">
+    <header class="app-header">
+      <h1>💰 Personal Budget Manager</h1>
+      <input type="month" v-model="selectedMonth" aria-label="Select month" />
+    </header>
+
+    <!-- File connection status -->
+    <section class="file-status" :class="fileStatus">
+      <template v-if="fileStatus === 'checking'">
+        <span>Checking for a linked CSV file…</span>
+      </template>
+      <template v-else-if="fileStatus === 'connected'">
+        <span>✅ Connected to <strong>{{ fileName }}</strong> — transactions are saved to this file.</span>
+        <button class="outline" @click="disconnectFile">Disconnect</button>
+      </template>
+      <template v-else-if="fileStatus === 'needs-permission'">
+        <span>🔒 Reconnect to <strong>{{ fileName }}</strong> to resume saving transactions to it.</span>
+        <button @click="reconnectFile">Reconnect</button>
+      </template>
+      <template v-else-if="fileStatus === 'unsupported'">
+        <span>⚠️ Your browser doesn't support saving directly to a file (use Chrome or Edge). Using local browser storage for now.</span>
+      </template>
+      <template v-else>
+        <span>Not connected to a CSV file — transactions are only saved in this browser for now.</span>
+        <button @click="connectFile">Connect CSV File</button>
+      </template>
+    </section>
+
+    <!-- Summary -->
+    <section class="summary-cards">
+      <div class="card income">
+        <div>Income (this month)</div>
+        <div class="amount">{{ currency(monthTotals.income) }}</div>
+        <div class="budget-note">Budgeted: {{ currency(budgetTotals.income) }}</div>
+      </div>
+      <div class="card expense">
+        <div>Expense (this month)</div>
+        <div class="amount">{{ currency(monthTotals.expense) }}</div>
+        <div class="budget-note">Budgeted: {{ currency(budgetTotals.expense) }}</div>
+      </div>
+      <div class="card savings">
+        <div>Net Savings</div>
+        <div class="amount">{{ currency(monthTotals.savings) }}</div>
+        <div class="budget-note">Budgeted: {{ currency(budgetTotals.savings) }}</div>
+      </div>
+    </section>
+
+    <!-- Add transaction -->
+    <section class="section">
+      <h2>Add Income / Expense</h2>
+      <form class="inline-form" @submit.prevent="addTransaction">
+        <div>
+          <label for="type">Type</label>
+          <select id="type" v-model="form.type" @change="form.category = categoriesByType(form.type)[0]?.name || ''">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </div>
+        <div>
+          <label for="category">Category</label>
+          <select id="category" v-model="form.category">
+            <option v-for="c in categoriesByType(form.type)" :key="c.id" :value="c.name">{{ c.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label for="date">Date</label>
+          <input id="date" type="date" v-model="form.date" required />
+        </div>
+        <div>
+          <label for="amount">Amount (₹)</label>
+          <input id="amount" type="number" min="0" step="0.01" v-model="form.amount" required />
+        </div>
+        <div>
+          <label for="notes">Notes</label>
+          <input id="notes" type="text" v-model="form.notes" placeholder="Optional" />
+        </div>
+        <div>
+          <button type="submit">Add</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Transactions -->
+    <section class="section">
+      <h2>Transactions — {{ selectedMonth }}</h2>
+      <table class="compact" v-if="filteredTransactions.length">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th class="text-right">Amount</th>
+            <th>Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="t in filteredTransactions" :key="t.id">
+            <td>{{ t.date }}</td>
+            <td><span class="type-badge" :class="t.type">{{ t.type }}</span></td>
+            <td>{{ t.category }}</td>
+            <td class="text-right">{{ currency(t.amount) }}</td>
+            <td class="text-muted">{{ t.notes }}</td>
+            <td><a href="#" @click.prevent="deleteTransaction(t.id)">delete</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <p v-else class="text-muted">No transactions recorded for this month yet.</p>
+    </section>
+
+    <!-- Budget vs actual -->
+    <section class="section">
+      <h2>Budget vs Actual — {{ selectedMonth }}</h2>
+      <table class="compact">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Type</th>
+            <th class="text-right">Budget</th>
+            <th class="text-right">Actual</th>
+            <th class="text-right">Remaining</th>
+            <th style="width: 140px">Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="c in categoryBreakdown" :key="c.id">
+            <td>{{ c.name }}</td>
+            <td><span class="type-badge" :class="c.type">{{ c.type }}</span></td>
+            <td class="text-right">{{ currency(c.monthlyBudget) }}</td>
+            <td class="text-right">{{ currency(c.actual) }}</td>
+            <td class="text-right">{{ currency(c.remaining) }}</td>
+            <td>
+              <div class="progress-bar">
+                <div class="progress-bar-fill" :class="{ over: c.actual > c.monthlyBudget }" :style="{ width: c.pct + '%' }"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Manage categories -->
+    <section class="section">
+      <details>
+        <summary><strong>Manage Categories</strong></summary>
+        <table class="compact">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th class="text-right">Monthly Budget</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="c in categories" :key="c.id">
+              <td>{{ c.name }}</td>
+              <td><span class="type-badge" :class="c.type">{{ c.type }}</span></td>
+              <td class="text-right">{{ currency(c.monthlyBudget) }}</td>
+              <td><a href="#" @click.prevent="deleteCategory(c.id)">delete</a></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <form class="inline-form" @submit.prevent="addCategory">
+          <div>
+            <label for="new-cat-name">Name</label>
+            <input id="new-cat-name" type="text" v-model="newCategory.name" required />
+          </div>
+          <div>
+            <label for="new-cat-type">Type</label>
+            <select id="new-cat-type" v-model="newCategory.type">
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+          <div>
+            <label for="new-cat-budget">Monthly Budget (₹)</label>
+            <input id="new-cat-budget" type="number" min="0" step="0.01" v-model="newCategory.monthlyBudget" />
+          </div>
+          <div>
+            <button type="submit">Add Category</button>
+          </div>
+        </form>
+      </details>
+    </section>
+
+    <footer class="text-muted">
+      <small>Transactions are saved to a CSV file on disk once connected (or to browser storage as a fallback). Categories/budgets are seeded from your household budget and stored in this browser.</small>
+    </footer>
+  </main>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="js/seed-data.js"></script>
+  <script src="js/csv-storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

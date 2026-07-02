@@ -1,0 +1,129 @@
+:root {
+  --income: #1a7f37;
+  --expense: #c0392b;
+  --savings: #2563eb;
+}
+
+body {
+  max-width: 1000px;
+}
+
+header.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+header.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.file-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  border-radius: var(--pico-border-radius);
+  border: 1px solid var(--pico-muted-border-color);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.file-status button {
+  width: auto;
+  margin: 0;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+}
+
+.file-status.connected { border-color: var(--income); }
+.file-status.needs-permission { border-color: #b7791f; }
+.file-status.unsupported { border-color: var(--expense); }
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.card {
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: 1rem;
+}
+
+.card .amount {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0.25rem 0;
+}
+
+.card.income .amount { color: var(--income); }
+.card.expense .amount { color: var(--expense); }
+.card.savings .amount { color: var(--savings); }
+
+.card .budget-note {
+  font-size: 0.8rem;
+  color: var(--pico-muted-color);
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.type-badge.income { background: var(--income); }
+.type-badge.expense { background: var(--expense); }
+
+.progress-bar {
+  background: var(--pico-muted-border-color);
+  border-radius: 1rem;
+  height: 8px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--savings);
+}
+
+.progress-bar-fill.over {
+  background: var(--expense);
+}
+
+table.compact td, table.compact th {
+  padding: 0.4rem 0.6rem;
+}
+
+.text-right { text-align: right; }
+.text-muted { color: var(--pico-muted-color); }
+
+form.inline-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+form.inline-form label {
+  margin-bottom: 0;
+}
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+details > summary {
+  cursor: pointer;
+}
