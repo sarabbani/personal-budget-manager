@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Personal Budget Manager</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=2" />
 </head>
 <body>
   <main class="container" id="app">
@@ -53,6 +53,49 @@
         <div class="amount">{{ currency(monthTotals.savings) }}</div>
         <div class="budget-note">Budgeted: {{ currency(budgetTotals.savings) }}</div>
       </div>
+    </section>
+
+    <!-- Expense breakdown -->
+    <section class="section">
+      <h2>Expense Breakdown — {{ selectedMonth }}</h2>
+      <div class="chart-row" v-if="expenseBreakdown.slices.length">
+        <div class="donut-wrap">
+          <svg class="donut-chart" viewBox="0 0 200 200" aria-hidden="true">
+            <path
+              v-for="s in expenseBreakdown.slices"
+              :key="s.name"
+              :d="s.path"
+              :fill="s.color"
+              class="donut-slice"
+              :class="{ hovered: hoveredSlice === s.name }"
+              @pointerenter="hoveredSlice = s.name"
+              @pointerleave="hoveredSlice = null"
+            ></path>
+            <text x="100" y="96" text-anchor="middle" class="donut-total-label">Total</text>
+            <text x="100" y="116" text-anchor="middle" class="donut-total-value">{{ currency(expenseBreakdown.total) }}</text>
+          </svg>
+          <div class="donut-tooltip" v-if="hoveredSliceData">
+            {{ hoveredSliceData.name }}: <strong>{{ currency(hoveredSliceData.amount) }}</strong> ({{ hoveredSliceData.pct }}%)
+          </div>
+        </div>
+        <ul class="donut-legend">
+          <li
+            v-for="s in expenseBreakdown.slices"
+            :key="s.name"
+            tabindex="0"
+            :class="{ hovered: hoveredSlice === s.name }"
+            @pointerenter="hoveredSlice = s.name"
+            @pointerleave="hoveredSlice = null"
+            @focus="hoveredSlice = s.name"
+            @blur="hoveredSlice = null"
+          >
+            <span class="legend-swatch" :style="{ background: s.color }"></span>
+            <span class="legend-name">{{ s.name }}</span>
+            <span class="legend-value">{{ currency(s.amount) }} · {{ s.pct }}%</span>
+          </li>
+        </ul>
+      </div>
+      <p v-else class="text-muted">No expenses recorded for this month yet.</p>
     </section>
 
     <!-- Add transaction -->
@@ -201,8 +244,8 @@
   </main>
 
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <script src="js/seed-data.js"></script>
-  <script src="js/csv-storage.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/seed-data.js?v=2"></script>
+  <script src="js/csv-storage.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
 </body>
 </html>

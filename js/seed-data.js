@@ -45,3 +45,35 @@ const SEED_CATEGORIES = [
 function round2(n) {
   return Math.round(n * 100) / 100;
 }
+
+// Groups expense categories into the segments shown on the expense donut.
+// Categories not listed here (including newly added ones) fall into "Misc".
+const CATEGORY_TO_GROUP = {
+  'Neha School expense': 'Education',
+  'Raahil School Expense': 'Education',
+  'Raahil Van fees': 'Education',
+  'Neha Van Fees': 'Education',
+  'Extra coaching class': 'Education',
+  'Shakul education (GKV)': 'Education',
+
+  'Big basket': 'Food',
+  'Chekku oil': 'Food',
+  'Non veg': 'Food',
+
+  'Entertainment': 'Entertainment',
+  'Mobile & OTT expense': 'Entertainment',
+  'Trip Expenses': 'Entertainment',
+
+  'Bakrid expenses': 'Festival',
+  'Ramzan expenses': 'Festival',
+  'Ramzan Jakkath': 'Festival',
+  'Family function': 'Festival',
+
+  'Home expense (wife)': 'Home maintenance',
+  'Home expense (amma)': 'Home maintenance',
+  'Maid salary': 'Home maintenance',
+  'EB charges': 'Home maintenance',
+  'Borewell water': 'Home maintenance',
+  'Internet expense': 'Home maintenance',
+  'Property / Water tax': 'Home maintenance',
+};

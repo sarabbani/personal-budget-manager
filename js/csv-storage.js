@@ -9,7 +9,7 @@ const CsvStorage = (() => {
   const CSV_HEADER = 'Date,Type,Category,Amount,Notes';
 
   function isSupported() {
-    return typeof window.showSaveFilePicker === 'function';
+    return typeof window.showOpenFilePicker === 'function';
   }
 
   function openDb() {
@@ -52,10 +52,16 @@ const CsvStorage = (() => {
   }
 
   async function pickFile() {
-    const handle = await window.showSaveFilePicker({
-      suggestedName: 'transactions.csv',
+    // An "open" picker so people select their existing transactions.csv,
+    // rather than a "save as" dialog that can default to a different folder
+    // and end up creating a fresh, empty file instead.
+    const [handle] = await window.showOpenFilePicker({
       types: [{ description: 'CSV file', accept: { 'text/csv': ['.csv'] } }],
     });
+    const granted = await handle.requestPermission({ mode: 'readwrite' });
+    if (granted !== 'granted') {
+      throw new DOMException('Write permission was not granted for the selected file.', 'NotAllowedError');
+    }
     await saveHandle(handle);
     return handle;
   }

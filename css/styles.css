@@ -2,6 +2,28 @@
   --income: #1a7f37;
   --expense: #c0392b;
   --savings: #2563eb;
+
+  --donut-slot-1: #2a78d6;
+  --donut-slot-2: #1baf7a;
+  --donut-slot-3: #eda100;
+  --donut-slot-4: #008300;
+  --donut-slot-5: #4a3aa7;
+  --donut-slot-6: #e34948;
+  --donut-other: #898781;
+  --donut-surface: #fcfcfb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --donut-slot-1: #3987e5;
+    --donut-slot-2: #199e70;
+    --donut-slot-3: #c98500;
+    --donut-slot-4: #008300;
+    --donut-slot-5: #9085e9;
+    --donut-slot-6: #e66767;
+    --donut-other: #898781;
+    --donut-surface: #1a1a19;
+  }
 }
 
 body {
@@ -126,4 +148,112 @@ form.inline-form label {
 
 details > summary {
   cursor: pointer;
+}
+
+.chart-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2rem;
+}
+
+.donut-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.donut-chart {
+  width: 220px;
+  height: 220px;
+  display: block;
+}
+
+.donut-slice {
+  transform-origin: 100px 100px;
+  transition: transform 120ms ease, filter 120ms ease;
+  cursor: pointer;
+}
+
+.donut-slice:hover,
+.donut-slice.hovered {
+  transform: scale(1.035);
+  filter: brightness(1.06);
+}
+
+.donut-total-label {
+  font-size: 0.65rem;
+  fill: var(--pico-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.donut-total-value {
+  font-size: 1rem;
+  font-weight: 700;
+  fill: var(--pico-color);
+}
+
+.donut-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: -0.5rem;
+  transform: translate(-50%, 100%);
+  background: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  box-shadow: var(--pico-card-box-shadow);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.donut-tooltip strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.donut-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 220px;
+}
+
+.donut-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--pico-border-radius);
+  cursor: pointer;
+}
+
+.donut-legend li:hover,
+.donut-legend li.hovered,
+.donut-legend li:focus-visible {
+  background: var(--pico-muted-border-color);
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-name {
+  flex: 1;
+  color: var(--pico-color);
+}
+
+.legend-value {
+  color: var(--pico-muted-color);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
