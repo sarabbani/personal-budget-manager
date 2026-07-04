@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Personal Budget Manager</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-  <link rel="stylesheet" href="css/styles.css?v=2" />
+  <link rel="stylesheet" href="css/styles.css?v=4" />
 </head>
 <body>
   <main class="container" id="app">
@@ -163,13 +163,13 @@
 
     <!-- Budget vs actual -->
     <section class="section">
-      <h2>Budget vs Actual — {{ selectedMonth }}</h2>
+      <h2>Budget vs Actual — {{ selectedYear }}</h2>
       <table class="compact">
         <thead>
           <tr>
             <th>Category</th>
             <th>Type</th>
-            <th class="text-right">Budget</th>
+            <th class="text-right">Budget (year)</th>
             <th class="text-right">Actual</th>
             <th class="text-right">Remaining</th>
             <th style="width: 140px">Progress</th>
@@ -179,12 +179,12 @@
           <tr v-for="c in categoryBreakdown" :key="c.id">
             <td>{{ c.name }}</td>
             <td><span class="type-badge" :class="c.type">{{ c.type }}</span></td>
-            <td class="text-right">{{ currency(c.monthlyBudget) }}</td>
+            <td class="text-right">{{ currency(c.annualBudget) }}</td>
             <td class="text-right">{{ currency(c.actual) }}</td>
             <td class="text-right">{{ currency(c.remaining) }}</td>
             <td>
               <div class="progress-bar">
-                <div class="progress-bar-fill" :class="{ over: c.actual > c.monthlyBudget }" :style="{ width: c.pct + '%' }"></div>
+                <div class="progress-bar-fill" :class="{ over: c.actual > c.annualBudget }" :style="{ width: c.pct + '%' }"></div>
               </div>
             </td>
           </tr>
@@ -244,8 +244,8 @@
   </main>
 
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <script src="js/seed-data.js?v=2"></script>
-  <script src="js/csv-storage.js?v=2"></script>
-  <script src="js/app.js?v=2"></script>
+  <script src="js/seed-data.js?v=4"></script>
+  <script src="js/csv-storage.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>

@@ -1,13 +1,20 @@
 const { createApp, computed, ref, onMounted } = Vue;
 
 const CATEGORIES_KEY = 'budget-manager-categories';
+const CATEGORIES_VERSION_KEY = 'budget-manager-categories-seed-version';
 const TRANSACTIONS_FALLBACK_KEY = 'budget-manager-transactions-fallback';
 
 function loadCategories() {
   const raw = localStorage.getItem(CATEGORIES_KEY);
   if (raw) {
     try {
-      return JSON.parse(raw);
+      const saved = JSON.parse(raw);
+      const savedVersion = Number(localStorage.getItem(CATEGORIES_VERSION_KEY)) || 1;
+      if (savedVersion >= SEED_VERSION) return saved;
+      // Seed data was updated on disk: take the fresh seeds, but keep any
+      // categories that were added through the UI (non-seed ids).
+      const custom = saved.filter((c) => !String(c.id).startsWith('seed-'));
+      return [...SEED_CATEGORIES, ...custom];
     } catch (e) {
       console.error('Failed to parse saved categories, reseeding.', e);
     }
@@ -98,6 +105,7 @@ createApp({
 
     function persistCategories() {
       localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories.value));
+      localStorage.setItem(CATEGORIES_VERSION_KEY, String(SEED_VERSION));
     }
 
     async function persistTransactions() {
@@ -183,16 +191,27 @@ createApp({
       () => expenseBreakdown.value.slices.find((s) => s.name === hoveredSlice.value) || null
     );
 
+    const selectedYear = computed(() => selectedMonth.value.slice(0, 4));
+
+    // Budget vs Actual tracks the whole year: actuals accumulate across the
+    // selected year and are compared to the annual budget (monthly × 12).
     const categoryBreakdown = computed(() => {
+      const yearTransactions = transactions.value.filter(
+        (t) => t.date.slice(0, 4) === selectedYear.value
+      );
       return categories.value.map((c) => {
-        const actual = filteredTransactions.value
+        const actual = yearTransactions
           .filter((t) => t.category === c.name)
           .reduce((sum, t) => sum + Number(t.amount), 0);
+        // Round to whole rupees: seeded monthly budgets are annual amounts
+        // divided by 12, so ×12 can land a few paise off the true annual figure.
+        const annualBudget = Math.round(Number(c.monthlyBudget) * 12);
         return {
           ...c,
+          annualBudget,
           actual,
-          remaining: Number(c.monthlyBudget) - actual,
-          pct: c.monthlyBudget > 0 ? Math.min(100, Math.round((actual / c.monthlyBudget) * 100)) : 0,
+          remaining: annualBudget - actual,
+          pct: annualBudget > 0 ? Math.min(100, Math.round((actual / annualBudget) * 100)) : 0,
         };
       });
     });
@@ -268,7 +287,8 @@ createApp({
     }
 
     onMounted(async () => {
-      if (!localStorage.getItem(CATEGORIES_KEY)) persistCategories();
+      // Persist on every load so a version-triggered reseed sticks.
+      persistCategories();
       form.value.category = categoriesByType.value('expense')[0]?.name || '';
 
       if (!CsvStorage.isSupported()) {
@@ -300,6 +320,7 @@ createApp({
       categories,
       transactions,
       selectedMonth,
+      selectedYear,
       form,
       newCategory,
       categoriesByType,

@@ -2,5 +2,9 @@ Date,Type,Category,Amount,Notes
 2026-07-02,expense,Maid salary,9000,
 2026-07-02,expense,Misc charges,200,Dwaraka maintenance
 2026-07-01,income,Salary,393000,
-2026-07-01,expense,Shakul education (GKV),833,
 2026-07-02,expense,Home expense (wife),11000,
+2026-07-04,income,Rent,6600,Karamadai
+2026-07-04,income,Rent,5000,Bharathi nagar
+2026-07-04,expense,Maid salary,4000,
+2026-07-01,expense,Shakul education (GKV),10000,
+2026-07-04,expense,Misc charges,300,Plumbing fix
